@@ -71,10 +71,19 @@ export class UsersService {
      * @param id id for logged user
      * @returns user date from db
     */
-    public async getCurrentUser(id: number) {
-        const user = await this.usersRepository.find({ where: { id } })
+    public async getCurrentUser(id: number): Promise<User> {
+        const user = await this.usersRepository.findOne({ where: { id } })
         if (!user) throw new NotFoundException('User Not Found')
-        return user
+        return user;
+    }
+
+    /**
+     * Get All users from db
+     * @returns array of users
+    */
+    public getAll(): Promise<User[]> {
+        return this.usersRepository.find();
+        
     }
 
     /**
