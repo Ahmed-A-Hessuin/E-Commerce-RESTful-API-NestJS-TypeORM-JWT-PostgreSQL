@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { User } from "./user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -7,6 +7,8 @@ import bcrypt from "node_modules/bcryptjs";
 import { LoginDto } from "./dtos/login.dto";
 import { JwtService } from "@nestjs/jwt";
 import { AccessTokenType, JWTPayloadType } from "src/utils/types";
+import { UpdateUserDto } from "./dtos/update-user.dto";
+import { UserType } from "src/utils/enums";
 
 @Injectable()
 export class UsersService {
@@ -28,8 +30,7 @@ export class UsersService {
         if (userFromDb) throw new BadRequestException("user aleardy exist");
 
         // hash password 
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(password, salt)
+        const hashedPassword = await this.hashPassword(password)
 
         // create new user 
         let newUser = this.usersRepository.create({
@@ -83,7 +84,41 @@ export class UsersService {
     */
     public getAll(): Promise<User[]> {
         return this.usersRepository.find();
-        
+
+    }
+
+    /**
+     * 
+     * @param id id of the logged user 
+     * @param updateUserDto data for updating the user
+     * @returns update user from the database 
+    */
+    public async update(id: number, updateUserDto: UpdateUserDto) {
+        const { username, password } = updateUserDto
+        const user = await this.usersRepository.findOne({ where: { id } })
+        if (!user) {
+            throw new Error('User not found');
+        }
+        user.username = username ?? user.username;
+        if (password) {
+            user.password = await this.hashPassword(password)
+        }
+        return this.usersRepository.save(user)
+    }
+
+    /**
+     * Delete User
+     * @param userId id for the user
+     * @param payload JWTPayload
+     * @returns a success message
+    */
+    public async delete(userId: number, payload: JWTPayloadType) {
+        const user = await this.getCurrentUser(userId)
+        if (user.id === payload.id || payload?.userType === UserType.ADMIN) {
+            await this.usersRepository.remove(user)
+            return { message: 'User has been deleted' }
+        }
+        throw new ForbiddenException("access denied , you are now allowed")
     }
 
     /**
@@ -93,5 +128,15 @@ export class UsersService {
     */
     private async generateJwt(payload: JWTPayloadType): Promise<string> {
         return await this.jwtService.signAsync(payload)
+    }
+
+    /**
+     * Hashing Password
+     * @param password plain text password
+     * @returns hashing password
+    */
+    private async hashPassword(password: string): Promise<string> {
+        const salt = await bcrypt.genSalt(10);
+        return bcrypt.hash(password, salt);
     }
 }

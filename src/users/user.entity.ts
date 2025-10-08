@@ -1,9 +1,9 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { CURRENT_TIMESTAMP } from '../utils/constants'
 import { Product } from "../products/product.entity";
 import { Review } from "../reviews/review.entity";
-
-import {UserType} from '../utils/enums'
+import { UserType } from '../utils/enums'
+import { Exclude } from "class-transformer";
 
 @Entity({ name: 'users' })
 export class User {
@@ -17,6 +17,7 @@ export class User {
     email: string;
 
     @Column()
+    @Exclude()
     password: string;
 
     @Column({ type: 'enum', enum: UserType, default: UserType.NORMAL_USER })
