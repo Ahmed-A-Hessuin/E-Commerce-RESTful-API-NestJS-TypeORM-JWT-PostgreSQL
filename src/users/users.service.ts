@@ -1,21 +1,20 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { User } from "./user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { RegistarDto } from "./dtos/registar.dto";
-import bcrypt from "node_modules/bcryptjs";
 import { LoginDto } from "./dtos/login.dto";
-import { JwtService } from "@nestjs/jwt";
 import { AccessTokenType, JWTPayloadType } from "src/utils/types";
 import { UpdateUserDto } from "./dtos/update-user.dto";
 import { UserType } from "src/utils/enums";
+import { AuthProvider } from "./auth.provider";
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
-        private readonly jwtService: JwtService,
+        private readonly authProvider: AuthProvider
     ) { }
 
     /**
@@ -24,27 +23,7 @@ export class UsersService {
      * @returns JWT
     */
     public async register(registerDto: RegistarDto): Promise<AccessTokenType> {
-        const { email, password, username } = registerDto
-        // confirm if email is exist 
-        const userFromDb = await this.usersRepository.findOne({ where: { email } })
-        if (userFromDb) throw new BadRequestException("user aleardy exist");
-
-        // hash password 
-        const hashedPassword = await this.hashPassword(password)
-
-        // create new user 
-        let newUser = this.usersRepository.create({
-            email,
-            username,
-            password: hashedPassword
-        })
-
-        // save user in DB
-        newUser = await this.usersRepository.save(newUser)
-
-        // generate Jwt and return it with data to user 
-        const accessToken = await this.generateJwt({ id: newUser.id, userType: newUser.userType })
-        return { accessToken };
+        return this.authProvider.register(registerDto)
     }
 
     /**
@@ -53,18 +32,7 @@ export class UsersService {
      * @returns JWT
     */
     public async login(loginDto: LoginDto): Promise<AccessTokenType> {
-        // confim if user exist 
-        const { email, password } = loginDto
-        const user = await this.usersRepository.findOne({ where: { email } })
-        if (!user) throw new BadRequestException("Invalid Email Or Password");
-
-        // compare clint password and password save in dp
-        const isPasswordMatch = await bcrypt.compare(password, user.password);
-        if (!isPasswordMatch) throw new BadRequestException("Invalid Email Or Password");
-
-        // generate Jwt and return it with data to user 
-        const accessToken = await this.generateJwt({ id: user.id, userType: user.userType })
-        return { accessToken };
+        return this.authProvider.login(loginDto)
     }
 
     /**
@@ -101,7 +69,7 @@ export class UsersService {
         }
         user.username = username ?? user.username;
         if (password) {
-            user.password = await this.hashPassword(password)
+            user.password = await this.authProvider.hashPassword(password)
         }
         return this.usersRepository.save(user)
     }
@@ -120,4 +88,6 @@ export class UsersService {
         }
         throw new ForbiddenException("access denied , you are now allowed")
     }
+
+
 }
