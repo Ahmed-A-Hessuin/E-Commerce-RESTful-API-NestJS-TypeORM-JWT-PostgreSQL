@@ -120,23 +120,4 @@ export class UsersService {
         }
         throw new ForbiddenException("access denied , you are now allowed")
     }
-
-    /**
-     * Generate Json Web Token
-     * @param payload JWt payload
-     * @returns Token
-    */
-    private async generateJwt(payload: JWTPayloadType): Promise<string> {
-        return await this.jwtService.signAsync(payload)
-    }
-
-    /**
-     * Hashing Password
-     * @param password plain text password
-     * @returns hashing password
-    */
-    private async hashPassword(password: string): Promise<string> {
-        const salt = await bcrypt.genSalt(10);
-        return bcrypt.hash(password, salt);
-    }
 }
