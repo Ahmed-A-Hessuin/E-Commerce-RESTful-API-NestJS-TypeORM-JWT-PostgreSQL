@@ -11,6 +11,7 @@ import { AuthProvider } from "./auth.provider"
 @Module({
     controllers: [usersController],
     providers: [UsersService, AuthProvider],
+    exports: [UsersService],
     imports: [
         TypeOrmModule.forFeature([User]),
         JwtModule.registerAsync({
@@ -23,7 +24,6 @@ import { AuthProvider } from "./auth.provider"
                 }
             }
         })
-
     ]
 })
 export class UsersModule { }
