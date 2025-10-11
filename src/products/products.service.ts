@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { CreateProductDto } from "./dtos/create-product.dto";
 import { UpdateProductDto } from "./dtos/update-product.dto";
-import { Repository } from "typeorm";
+import { Repository, Like, Between } from "typeorm";
 import { Product } from "./product.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UsersService } from "src/users/users.service";
@@ -35,8 +35,12 @@ export class ProductsService {
     * Get All Products
     * @returns Collection of products 
     */
-    public getAll() {
-        return this.productsRepository.find();
+    public getAll(title?: string, minPrice?: string, maxPrice?: string) {
+        const filters = {
+            ...(title ? { title: Like(`%${title.toLowerCase()}%`) } : {}),
+            ...(minPrice && maxPrice ? { price: Between(Number(minPrice), Number(maxPrice)) } : {})
+        };
+        return this.productsRepository.find({ where: filters });
     }
 
     /**
@@ -45,7 +49,7 @@ export class ProductsService {
     * @returns  product from the database
     */
     public async getOneBy(id: number) {
-        const product = await this.productsRepository.findOne({ where: { id }  });
+        const product = await this.productsRepository.findOne({ where: { id } });
         if (!product) throw new NotFoundException("NO Product Found");
         return product;
     }
