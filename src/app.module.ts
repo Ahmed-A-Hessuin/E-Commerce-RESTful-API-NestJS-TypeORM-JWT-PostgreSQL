@@ -8,9 +8,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from './users/user.entity';
 import { Review } from './reviews/review.entity';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AppController } from './app.controller';
 
 
 @Module({
+  controllers : [AppController] ,
   imports: [
     productsModule,
     ReviewsModule,
@@ -32,7 +34,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: `.env.${process.env.NODE_ENV}`
+      envFilePath: process.env.NODE_ENV !== 'production' ? `.env.${process.env.NODE_ENV} ` : '.env'
     })
   ],
   providers :[{
