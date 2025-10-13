@@ -9,7 +9,7 @@ import { AuthRolesGuard } from "./guards/auth-roles.guard";
 import { UserType } from "src/utils/enums";
 import { Roles } from "./decorators/user-role.decorators";
 import { UpdateUserDto } from "./dtos/update-user.dto";
-import { LoggerInterceptor } from "src/utils/interceptors/logger.interceptor";
+import { LoggerInterceptor } from "../utils/interceptors/logger.interceptor";
 
 
 @Controller('api/users')
