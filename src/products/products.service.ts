@@ -40,7 +40,9 @@ export class ProductsService {
             ...(title ? { title: Like(`%${title.toLowerCase()}%`) } : {}),
             ...(minPrice && maxPrice ? { price: Between(Number(minPrice), Number(maxPrice)) } : {})
         };
-        return this.productsRepository.find({ where: filters });
+        return this.productsRepository.find({
+            where: filters, order: { createdAt: 'DESC' }
+        });
     }
 
     /**

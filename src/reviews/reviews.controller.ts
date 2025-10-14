@@ -1,4 +1,4 @@
-import { Body, Controller, Param, ParseIntPipe, Post, UseGuards, Get, Put, Delete } from "@nestjs/common";
+import { Body, Controller, Param, ParseIntPipe, Post, UseGuards, Get, Put, Delete, Query } from "@nestjs/common";
 import { ReviewsService } from "./reviews.service";
 import { CreateReviewDto } from "./dtos/create-review.dto";
 import { CurrentUser } from "src/users/decorators/current-user.decorator";
@@ -29,8 +29,11 @@ export class ReviewsController {
     @Get()
     @UseGuards(AuthRolesGuard)
     @Roles(UserType.ADMIN)
-    public getAllReviews() {
-        return this.reviewsService.getAll()
+    public getAllReviews(
+        @Query('pageNumber', ParseIntPipe) pageNumber: number,
+        @Query('reviewPerPage', ParseIntPipe) reviewPerPage: number
+    ) {
+        return this.reviewsService.getAll(pageNumber, reviewPerPage)
     }
 
     // PUT : ~ /api/reviews/:id
