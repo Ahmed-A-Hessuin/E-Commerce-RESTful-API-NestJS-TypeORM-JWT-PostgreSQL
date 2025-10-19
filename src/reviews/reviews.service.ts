@@ -48,7 +48,7 @@ export class ReviewsService {
         return this.reviewsRepository.find({
             skip: reviewPerPage * (pageNumber - 1),
             take: reviewPerPage,
-            order: { createdAt: 'DESC' }
+            order: { createdAt: 'DESC' } 
         });
     }
 
