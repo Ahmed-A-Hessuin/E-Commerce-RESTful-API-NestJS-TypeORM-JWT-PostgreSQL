@@ -82,7 +82,7 @@ export class UsersService {
     */
     public async delete(userId: number, payload: JWTPayloadType) {
         const user = await this.getCurrentUser(userId)
-        if (user.id === payload.id || payload?.userType === UserType.ADMIN) {
+        if (user.id === payload?.id || payload.userType === UserType.ADMIN) {
             await this.usersRepository.remove(user)
             return { message: 'User has been deleted' }
         }

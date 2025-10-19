@@ -33,8 +33,8 @@ export class User {
     updatedAt: Date;
 
     @OneToMany(() => Product, (product) => product.user)
-    product: Product[]
+    products: Product[]
 
     @OneToMany(() => Review, (review) => review.user)
-    reviews: Review
+    reviews: Review[]
 }

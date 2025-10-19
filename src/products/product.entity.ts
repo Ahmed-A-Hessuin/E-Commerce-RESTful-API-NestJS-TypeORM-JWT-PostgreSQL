@@ -27,9 +27,6 @@ export class Product {
     @OneToMany(() => Review, (review) => review.product, { eager: true })
     reviews: Review[]
 
-    @ManyToOne(() => User, (user) => user.product, {
-        eager: true,
-        onDelete: 'CASCADE',
-    })
+    @ManyToOne(() => User, (user) => user.products, { eager: true })
     user: User;
 }
