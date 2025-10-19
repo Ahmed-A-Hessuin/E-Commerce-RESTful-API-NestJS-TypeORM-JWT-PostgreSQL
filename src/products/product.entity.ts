@@ -24,9 +24,12 @@ export class Product {
     @UpdateDateColumn({ type: 'timestamp', default: () => CURRENT_TIMESTAMP, onUpdate: CURRENT_TIMESTAMP })
     updatedAt: Date
 
-    @OneToMany(() => Review, (review) => review.product , {eager : true})
+    @OneToMany(() => Review, (review) => review.product, { eager: true })
     reviews: Review[]
 
-    @ManyToOne(() => User, (user) => user.product , {eager : true})
+    @ManyToOne(() => User, (user) => user.product, {
+        eager: true,
+        onDelete: 'CASCADE',
+    })
     user: User;
 }
