@@ -1,13 +1,15 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { User } from "./user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { RegistarDto } from "./dtos/registar.dto";
 import { LoginDto } from "./dtos/login.dto";
-import { AccessTokenType, JWTPayloadType } from "src/utils/types";
+import { AccessTokenType, JWTPayloadType } from "../utils/types";
 import { UpdateUserDto } from "./dtos/update-user.dto";
-import { UserType } from "src/utils/enums";
+import { UserType } from "../utils/enums";
 import { AuthProvider } from "./auth.provider";
+import { join } from 'node:path'
+import { unlinkSync } from "node:fs";
 
 @Injectable()
 export class UsersService {
@@ -22,7 +24,7 @@ export class UsersService {
      * @param registerDto 
      * @returns JWT
     */
-    public async register(registerDto: RegistarDto): Promise<AccessTokenType> {
+    public async register(registerDto: RegistarDto) {
         return this.authProvider.register(registerDto)
     }
 
@@ -31,7 +33,7 @@ export class UsersService {
      * @param loginDto data for Log in to user account
      * @returns JWT
     */
-    public async login(loginDto: LoginDto): Promise<AccessTokenType> {
+    public async login(loginDto: LoginDto)  {
         return this.authProvider.login(loginDto)
     }
 
@@ -83,9 +85,65 @@ export class UsersService {
     public async delete(userId: number, payload: JWTPayloadType) {
         const user = await this.getCurrentUser(userId)
         if (user.id === payload?.id || payload.userType === UserType.ADMIN) {
-            await this.usersRepository.delete(user)
+            await this.usersRepository.remove(user)
             return { message: 'User has been deleted' }
         }
         throw new ForbiddenException("access denied , you are now allowed")
     }
+
+    /**
+     * set profile image
+     * @param userId id for the logged user
+     * @param newProfileImage profile image 
+     * @returns the user from db
+     */
+    public async setProfileImage(userId: number, newProfileImage: string) {
+        const user = await this.getCurrentUser(userId);
+        if (user.profileImage === null) {
+            user.profileImage = newProfileImage;
+        } else {
+            await this.removeProfileImage(userId);
+            user.profileImage = newProfileImage
+        }
+        return this.usersRepository.save(user)
+    }
+
+    /**
+     * Remove Profile Image
+     * @param userId id of the logged in user
+     * @returns the user from the database
+     */
+    public async removeProfileImage(userId: number) {
+        const user = await this.getCurrentUser(userId)
+        if (user.profileImage === null)
+            throw new BadRequestException('there is no profile image')
+
+        const imagePath = join(process.cwd(), `./images/users/${user.profileImage}`)
+        unlinkSync(imagePath)
+
+        user.profileImage = null as unknown as string;
+        return this.usersRepository.save(user)
+    }
+
+    /**
+     * verify Email
+     * @param userId id of the user from link
+     * @param verificationToken verification token from the link
+     * @returns success message
+     */
+    public async verifyEmail (userId : number , verificationToken : string ) {
+        const user = await this.getCurrentUser(userId);
+        if(user.verificationToken === null)
+            throw new NotFoundException('there is no verification token')
+
+        if(user.verificationToken !== verificationToken ) 
+            throw new BadRequestException('invalid link')
+
+        user.isAccountVerified = true ;
+        user.verificationToken = null as unknown as string ;
+
+        await this.usersRepository.save(user);
+        return {message : 'Your email has been verified , please login to your account'}
+    }
+
 }

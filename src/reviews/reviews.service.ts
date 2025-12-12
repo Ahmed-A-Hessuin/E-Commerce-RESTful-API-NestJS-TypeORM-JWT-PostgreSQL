@@ -2,12 +2,12 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { InjectRepository } from "@nestjs/typeorm";
 import { Review } from "./review.entity";
 import { Repository } from "typeorm";
-import { ProductsService } from "src/products/products.service";
-import { UsersService } from "src/users/users.service";
+import { ProductsService } from "../products/products.service";
+import { UsersService } from "../users/users.service";
 import { CreateReviewDto } from "./dtos/create-review.dto";
 import { UpdateReviewDto } from "./dtos/update-review.dto";
-import { JWTPayloadType } from "src/utils/types";
-import { UserType } from "src/utils/enums";
+import { JWTPayloadType } from "../utils/types";
+import { UserType } from "../utils/enums";
 
 @Injectable()
 export class ReviewsService {
@@ -48,7 +48,7 @@ export class ReviewsService {
         return this.reviewsRepository.find({
             skip: reviewPerPage * (pageNumber - 1),
             take: reviewPerPage,
-            order: { createdAt: 'DESC' } 
+            order: { createdAt: 'DESC' }
         });
     }
 
@@ -60,7 +60,7 @@ export class ReviewsService {
      */
     public async update(reviewId: number, userId: number, dto: UpdateReviewDto) {
         const review = await this.getReviewBy(reviewId)
-        if (review.user.id !== userId)
+        if (!review.user || review.user.id !== userId)
             throw new ForbiddenException('access denied , you are not allowed')
 
         review.rating = dto.rating ?? review.rating;

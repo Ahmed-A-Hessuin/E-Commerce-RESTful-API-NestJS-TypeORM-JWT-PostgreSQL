@@ -20,8 +20,14 @@ export class User {
     @Exclude()
     password: string;
 
+    @Column({ nullable: true, default: null })
+    profileImage: string
+
     @Column({ type: 'enum', enum: UserType, default: UserType.NORMAL_USER })
     userType: UserType;
+
+    @Column({ nullable: true })
+    verificationToken: string;
 
     @Column({ default: false })
     isAccountVerified: boolean;

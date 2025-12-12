@@ -4,14 +4,13 @@ import { UpdateProductDto } from "./dtos/update-product.dto";
 import { Repository, Like, Between } from "typeorm";
 import { Product } from "./product.entity";
 import { InjectRepository } from "@nestjs/typeorm";
-import { UsersService } from "src/users/users.service";
+import { UsersService } from "../users/users.service";
 
 
 @Injectable()
 export class ProductsService {
     constructor(
-        @InjectRepository(Product)
-        private readonly productsRepository: Repository<Product>,
+        @InjectRepository(Product) private readonly productsRepository: Repository<Product>,
         private readonly usersService: UsersService
     ) { }
 
@@ -40,9 +39,7 @@ export class ProductsService {
             ...(title ? { title: Like(`%${title.toLowerCase()}%`) } : {}),
             ...(minPrice && maxPrice ? { price: Between(Number(minPrice), Number(maxPrice)) } : {})
         };
-        return this.productsRepository.find({
-            where: filters, order: { createdAt: 'DESC' }
-        });
+        return this.productsRepository.find({ where: filters });
     }
 
     /**
@@ -52,7 +49,7 @@ export class ProductsService {
     */
     public async getOneBy(id: number) {
         const product = await this.productsRepository.findOne({ where: { id } });
-        if (!product) throw new NotFoundException("NO Product Found");
+        if (!product) throw new NotFoundException("product not found");
         return product;
     }
 
