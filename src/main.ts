@@ -22,6 +22,7 @@ async function bootstrap() {
     .setTitle('E-Commerce API (NestJS)')
     .setDescription('REST API documentation for E-Commerce application built with NestJS')
     .setVersion("1.0")
+    .addServer('https://nestjs-ecommerce-app.vercel.app')
     .addSecurity('bearer', { type: 'http', scheme: 'bearer' })
     .addBearerAuth()
     .build();
@@ -31,6 +32,6 @@ async function bootstrap() {
   SwaggerModule.setup("swagger", app, documentation)
 
   // Running the App
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000 , '0.0.0.0') ;
 }
 bootstrap();
