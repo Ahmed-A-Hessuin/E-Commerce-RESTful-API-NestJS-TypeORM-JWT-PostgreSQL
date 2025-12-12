@@ -5,6 +5,6 @@ export class AppController {
 
     @Get("/")
     public getHome() {
-        return "Your app is working";
+        return "Your server is working";
     }
 }
