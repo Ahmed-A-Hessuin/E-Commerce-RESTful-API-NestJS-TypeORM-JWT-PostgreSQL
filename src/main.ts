@@ -7,11 +7,16 @@ import helmet from 'helmet';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS (لازم قبل Swagger)
   app.enableCors({
     origin: '*',
   });
 
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+    }),
+  );
+  
   // Global Validation
   app.useGlobalPipes(
     new ValidationPipe({
@@ -19,14 +24,6 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-
-  // Helmet (مهم تعطيل CSP)
-  app.use(
-    helmet({
-      contentSecurityPolicy: false,
-    }),
-  );
-
 
   // Swagger Config
   const config = new DocumentBuilder()
