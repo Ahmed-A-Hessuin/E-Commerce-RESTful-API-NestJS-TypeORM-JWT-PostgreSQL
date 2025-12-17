@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Res, UploadedFile, UseGuards, UseInterceptors} from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { RegistarDto } from "./dtos/registar.dto";
 import { LoginDto } from "./dtos/login.dto";
@@ -9,7 +9,6 @@ import { AuthRolesGuard } from "./guards/auth-roles.guard";
 import { UserType } from "../utils/enums";
 import { Roles } from "./decorators/user-role.decorators";
 import { UpdateUserDto } from "./dtos/update-user.dto";
-import { LoggerInterceptor } from "../utils/interceptors/logger.interceptor";
 import { FileInterceptor } from "@nestjs/platform-express";
 import express from "express";
 import { ApiTags, ApiOperation, ApiSecurity, ApiConsumes, ApiBody, ApiParam } from "@nestjs/swagger";
@@ -40,7 +39,6 @@ export class UsersController {
     // GET : ~ /api/users/current-user
     @Get('current-user')
     @UseGuards(AuthGuard)
-    @UseInterceptors(LoggerInterceptor)
     @ApiSecurity('bearer')
     @ApiOperation({ summary: 'Get the current logged-in user' })
     public getCurrentUser(@CurrentUser() payload: JWTPayloadType) {
@@ -86,7 +84,7 @@ export class UsersController {
     @ApiSecurity('bearer')
     @ApiOperation({ summary: 'Upload user profile image' })
     @ApiConsumes("multipart/form-data")
-    @ApiBody({type : ImageUploadDto , description : 'profile Image'})
+    @ApiBody({ type: ImageUploadDto, description: 'profile Image' })
     public uploadProfileImage(
         @UploadedFile() file: Express.Multer.File,
         @CurrentUser() payload: JWTPayloadType

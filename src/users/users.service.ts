@@ -50,11 +50,10 @@ export class UsersService {
 
     /**
      * Get All users from db
-     * @returns array of users
+     * @returns collection of users
     */
     public getAll(): Promise<User[]> {
         return this.usersRepository.find();
-
     }
 
     /**

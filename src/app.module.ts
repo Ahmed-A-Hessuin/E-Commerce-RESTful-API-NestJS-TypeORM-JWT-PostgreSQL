@@ -36,6 +36,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     }),
   ],
   providers: [{
+    // global interceptor
     provide: APP_INTERCEPTOR,
     useClass: ClassSerializerInterceptor
   }, 

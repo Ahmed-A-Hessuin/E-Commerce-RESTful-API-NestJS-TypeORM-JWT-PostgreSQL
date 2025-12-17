@@ -2,43 +2,44 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import helmet from "helmet";
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable global validation
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true
-  }));
+  // Enable CORS (لازم قبل Swagger)
+  app.enableCors({
+    origin: '*',
+  });
 
-  // Apply Middleware
-  app.use(helmet());
+  // Global Validation
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
-  // Swagger
-  const swagger = new DocumentBuilder()
-    .setTitle('E-Commerce API (NestJS)')
-    .setDescription('REST API documentation for E-Commerce application built with NestJS')
-    .setVersion("1.0")
-    .addServer('https://nestjs-ecommerce-app.vercel.app')
-    .addSecurity('bearer', { type: 'http', scheme: 'bearer' })
+  // Helmet (مهم تعطيل CSP)
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+    }),
+  );
+
+
+  // Swagger Config
+  const config = new DocumentBuilder()
+    .setTitle('E-Commerce API')
+    .setDescription('API Documentation')
+    .setVersion('1.0')
     .addBearerAuth()
     .build();
 
-  const documentation = SwaggerModule.createDocument(app, swagger);
+  const document = SwaggerModule.createDocument(app, config);
 
-  SwaggerModule.setup("swagger", app, documentation, {
-    swaggerOptions: {
-      urls: [],
-    },
-    customCssUrl: 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui.css',
-    customJs: 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui-bundle.js',
-    customfavIcon: 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/favicon-32x32.png',
-  });
+  SwaggerModule.setup('swagger', app, document);
 
-  // Running the App
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
+  await app.listen(process.env.PORT || 3000, '0.0.0.0');
 }
-
 bootstrap();

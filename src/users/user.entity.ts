@@ -18,7 +18,7 @@ export class User {
 
     @Column()
     @Exclude()
-    password: string;
+    password: string; 
 
     @Column({ nullable: true, default: null })
     profileImage: string
